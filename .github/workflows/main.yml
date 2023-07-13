@@ -1,35 +1,30 @@
-name: CodeQL
+name: Continuous Integration
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-  schedule:
-    - cron: '56 5 * * 1'
-  workflow_call:
+    branches:
+      - develop
+      - alpha
+      - main
 
 jobs:
-  analyze:
-    name: Analyze
+  test:
+    name: Tests
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        language:
-          - react-native
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+      - uses: c-hive/gha-yarn-cache@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: ${{ matrix.language }}
+      - name: Install node modules
+        run: |
+          yarn install
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+      - name: Run CI with Lefthook
+        run: |
+          yarn lefthook run ci-hook
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+      - name: Run test
+        run: |
+          yarn test-ci
